@@ -3,19 +3,19 @@
 namespace App\Controller\Api;
 
 use App\Entity\Contact;
+use App\Repository\ContactRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[Route('/api/contact')]
 class ContactApiController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ContactRepository $contactRepository,
     ) {
     }
 
@@ -29,7 +29,6 @@ class ContactApiController extends AbstractController
         $sujet = trim($data['sujet'] ?? '');
         $message = trim($data['message'] ?? '');
 
-        // Validation simple des champs obligatoires
         $errors = [];
         if ($nom === '') $errors['nom'] = 'Le nom est requis.';
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'E-mail invalide.';
@@ -50,5 +49,35 @@ class ContactApiController extends AbstractController
         $this->entityManager->flush();
 
         return $this->json(['success' => true, 'message' => 'Votre message a bien été envoyé.'], 201);
+    }
+
+    // ---- Admin (protégé par JWT) ----
+
+    #[Route('/admin/all', name: 'api_contact_admin_list', methods: ['GET'])]
+    public function adminList(): JsonResponse
+    {
+        $contacts = $this->contactRepository->findBy([], ['id' => 'DESC']);
+
+        return $this->json(array_map(fn(Contact $c) => [
+            'id' => $c->getId(),
+            'nom' => $c->getNom(),
+            'email' => $c->getEmail(),
+            'sujet' => $c->getSujet(),
+            'message' => $c->getMessage(),
+        ], $contacts));
+    }
+
+    #[Route('/admin/{id<\d+>}', name: 'api_contact_delete', methods: ['DELETE'])]
+    public function delete(int $id): JsonResponse
+    {
+        $contact = $this->contactRepository->find($id);
+        if (!$contact) {
+            return $this->json(['error' => 'Message introuvable'], 404);
+        }
+
+        $this->entityManager->remove($contact);
+        $this->entityManager->flush();
+
+        return $this->json(['success' => true]);
     }
 }
