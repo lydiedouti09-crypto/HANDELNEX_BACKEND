@@ -14,7 +14,6 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        # Firewall dédié à la connexion : reçoit email/password en JSON, renvoie un token JWT
         login:
             pattern: ^/api/login
             stateless: true
@@ -25,7 +24,6 @@ security:
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-        # Firewall pour le reste de l'API : vérifie le token JWT sur chaque requête
         api:
             pattern: ^/api
             stateless: true
@@ -37,7 +35,5 @@ security:
 
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        # Lecture publique (le site React public doit pouvoir lire sans être connecté)
         - { path: ^/api, roles: PUBLIC_ACCESS, methods: [GET] }
-        # Écriture réservée à l'admin connecté (POST/PUT/DELETE)
         - { path: ^/api, roles: ROLE_ADMIN }
