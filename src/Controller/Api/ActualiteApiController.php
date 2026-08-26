@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/actualites')]
@@ -50,6 +51,33 @@ class ActualiteApiController extends AbstractController
         $actualites = $this->actualiteRepository->findBy([], ['datePublication' => 'DESC']);
 
         return $this->json(array_map(fn(Actualite $a) => $this->toArray($a, true), $actualites));
+    }
+
+    #[Route('/admin/image-upload', name: 'api_actualites_image_upload', methods: ['POST'])]
+    public function uploadImage(Request $request): JsonResponse
+    {
+        $image = $request->files->get('image');
+        if (!$image instanceof UploadedFile || !$image->isValid()) {
+            return $this->json(['error' => 'Image invalide'], 400);
+        }
+
+        if (!in_array($image->getMimeType(), ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true)) {
+            return $this->json(['error' => 'Format d\'image non autorisé'], 400);
+        }
+
+        if ($image->getSize() > 10 * 1024 * 1024) {
+            return $this->json(['error' => 'L\'image ne doit pas dépasser 10 Mo'], 400);
+        }
+
+        $uploadDirectory = dirname(__DIR__, 3) . '/public/uploads/actualites';
+        if (!is_dir($uploadDirectory)) {
+            mkdir($uploadDirectory, 0775, true);
+        }
+
+        $filename = uniqid('actualite_', true) . '.' . $image->guessExtension();
+        $image->move($uploadDirectory, $filename);
+
+        return $this->json(['url' => '/uploads/actualites/' . $filename]);
     }
 
     #[Route('/admin', name: 'api_actualites_create', methods: ['POST'])]
