@@ -24,8 +24,35 @@ class Actualite
     #[ORM\Column(type: Types::TEXT)]
     private ?string $contenu = null;
 
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $titreFr = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $titreEn = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $titreDe = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $contenuFr = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $contenuEn = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $contenuDe = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageFr = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageEn = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageDe = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $datePublication = null;
@@ -80,6 +107,19 @@ class Actualite
         return $this;
     }
 
+    public function getTitreFr(): ?string { return $this->titreFr; }
+    public function setTitreFr(?string $titreFr): static { $this->titreFr = $titreFr; return $this; }
+    public function getTitreEn(): ?string { return $this->titreEn; }
+    public function setTitreEn(?string $titreEn): static { $this->titreEn = $titreEn; return $this; }
+    public function getTitreDe(): ?string { return $this->titreDe; }
+    public function setTitreDe(?string $titreDe): static { $this->titreDe = $titreDe; return $this; }
+    public function getContenuFr(): ?string { return $this->contenuFr; }
+    public function setContenuFr(?string $contenuFr): static { $this->contenuFr = $contenuFr; return $this; }
+    public function getContenuEn(): ?string { return $this->contenuEn; }
+    public function setContenuEn(?string $contenuEn): static { $this->contenuEn = $contenuEn; return $this; }
+    public function getContenuDe(): ?string { return $this->contenuDe; }
+    public function setContenuDe(?string $contenuDe): static { $this->contenuDe = $contenuDe; return $this; }
+
     public function getImage(): ?string
     {
         return $this->image;
@@ -88,6 +128,39 @@ class Actualite
     public function setImage(?string $image): static
     {
         $this->image = $image;
+        return $this;
+    }
+
+    public function getImageFr(): ?string
+    {
+        return $this->imageFr;
+    }
+
+    public function setImageFr(?string $imageFr): static
+    {
+        $this->imageFr = $imageFr;
+        return $this;
+    }
+
+    public function getImageEn(): ?string
+    {
+        return $this->imageEn;
+    }
+
+    public function setImageEn(?string $imageEn): static
+    {
+        $this->imageEn = $imageEn;
+        return $this;
+    }
+
+    public function getImageDe(): ?string
+    {
+        return $this->imageDe;
+    }
+
+    public function setImageDe(?string $imageDe): static
+    {
+        $this->imageDe = $imageDe;
         return $this;
     }
 

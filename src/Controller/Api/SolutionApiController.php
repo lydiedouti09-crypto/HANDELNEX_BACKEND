@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[Route('/api/solutions')]
 class SolutionApiController extends AbstractController
@@ -88,6 +89,9 @@ class SolutionApiController extends AbstractController
 
         $solution = new Solution();
         $this->hydrate($solution, $data);
+        if (!$solution->getSlug()) {
+            $solution->setSlug($this->uniqueSlug($solution->getNom() ?? 'solution'));
+        }
 
         $this->entityManager->persist($solution);
         $this->entityManager->flush();
@@ -130,8 +134,19 @@ class SolutionApiController extends AbstractController
         if (isset($data['nom'])) $solution->setNom($data['nom']);
         if (isset($data['slug'])) $solution->setSlug($data['slug']);
         if (isset($data['description'])) $solution->setDescription($data['description']);
+        if (isset($data['nomFr'])) $solution->setNomFr($data['nomFr']);
+        if (isset($data['nomEn'])) $solution->setNomEn($data['nomEn']);
+        if (isset($data['nomDe'])) $solution->setNomDe($data['nomDe']);
+        if (isset($data['descriptionFr'])) $solution->setDescriptionFr($data['descriptionFr']);
+        if (isset($data['descriptionEn'])) $solution->setDescriptionEn($data['descriptionEn']);
+        if (isset($data['descriptionDe'])) $solution->setDescriptionDe($data['descriptionDe']);
+        if (!$solution->getNom() && $solution->getNomFr()) $solution->setNom($solution->getNomFr());
+        if (!$solution->getDescription() && $solution->getDescriptionFr()) $solution->setDescription($solution->getDescriptionFr());
         if (isset($data['descriptionComplete'])) $solution->setDescriptionComplete($data['descriptionComplete']);
         if (isset($data['image'])) $solution->setImage($data['image']);
+        if (isset($data['imageFr'])) $solution->setImageFr($data['imageFr']);
+        if (isset($data['imageEn'])) $solution->setImageEn($data['imageEn']);
+        if (isset($data['imageDe'])) $solution->setImageDe($data['imageDe']);
         if (isset($data['icone'])) $solution->setIcone($data['icone']);
         if (isset($data['categorie'])) $solution->setCategorie($data['categorie']);
         if (isset($data['lienGooglePlay'])) $solution->setLienGooglePlay($data['lienGooglePlay']);
@@ -146,7 +161,16 @@ class SolutionApiController extends AbstractController
             'nom' => $solution->getNom(),
             'slug' => $solution->getSlug(),
             'description' => $solution->getDescription(),
+            'nomFr' => $solution->getNomFr(),
+            'nomEn' => $solution->getNomEn(),
+            'nomDe' => $solution->getNomDe(),
+            'descriptionFr' => $solution->getDescriptionFr(),
+            'descriptionEn' => $solution->getDescriptionEn(),
+            'descriptionDe' => $solution->getDescriptionDe(),
             'image' => $solution->getImage(),
+            'imageFr' => $solution->getImageFr(),
+            'imageEn' => $solution->getImageEn(),
+            'imageDe' => $solution->getImageDe(),
             'icone' => $solution->getIcone(),
             'categorie' => $solution->getCategorie(),
             'lienGooglePlay' => $solution->getLienGooglePlay(),
@@ -159,5 +183,17 @@ class SolutionApiController extends AbstractController
         }
 
         return $data;
+    }
+
+    private function uniqueSlug(string $value): string
+    {
+        $base = (new AsciiSlugger())->slug($value)->lower()->toString() ?: 'solution';
+        $slug = $base;
+        $suffix = 2;
+        while ($this->solutionRepository->findOneBy(['slug' => $slug])) {
+            $slug = $base . '-' . $suffix++;
+        }
+
+        return $slug;
     }
 }

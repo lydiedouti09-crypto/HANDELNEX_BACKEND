@@ -24,11 +24,38 @@ class Solution
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $nomFr = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $nomEn = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $nomDe = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $descriptionFr = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $descriptionEn = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $descriptionDe = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionComplete = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageFr = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageEn = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageDe = null;
 
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $icone = null;
@@ -91,6 +118,19 @@ class Solution
         return $this;
     }
 
+    public function getNomFr(): ?string { return $this->nomFr; }
+    public function setNomFr(?string $nomFr): static { $this->nomFr = $nomFr; return $this; }
+    public function getNomEn(): ?string { return $this->nomEn; }
+    public function setNomEn(?string $nomEn): static { $this->nomEn = $nomEn; return $this; }
+    public function getNomDe(): ?string { return $this->nomDe; }
+    public function setNomDe(?string $nomDe): static { $this->nomDe = $nomDe; return $this; }
+    public function getDescriptionFr(): ?string { return $this->descriptionFr; }
+    public function setDescriptionFr(?string $descriptionFr): static { $this->descriptionFr = $descriptionFr; return $this; }
+    public function getDescriptionEn(): ?string { return $this->descriptionEn; }
+    public function setDescriptionEn(?string $descriptionEn): static { $this->descriptionEn = $descriptionEn; return $this; }
+    public function getDescriptionDe(): ?string { return $this->descriptionDe; }
+    public function setDescriptionDe(?string $descriptionDe): static { $this->descriptionDe = $descriptionDe; return $this; }
+
     public function getDescriptionComplete(): ?string
     {
         return $this->descriptionComplete;
@@ -110,6 +150,39 @@ class Solution
     public function setImage(?string $image): static
     {
         $this->image = $image;
+        return $this;
+    }
+
+    public function getImageFr(): ?string
+    {
+        return $this->imageFr;
+    }
+
+    public function setImageFr(?string $imageFr): static
+    {
+        $this->imageFr = $imageFr;
+        return $this;
+    }
+
+    public function getImageEn(): ?string
+    {
+        return $this->imageEn;
+    }
+
+    public function setImageEn(?string $imageEn): static
+    {
+        $this->imageEn = $imageEn;
+        return $this;
+    }
+
+    public function getImageDe(): ?string
+    {
+        return $this->imageDe;
+    }
+
+    public function setImageDe(?string $imageDe): static
+    {
+        $this->imageDe = $imageDe;
         return $this;
     }
 

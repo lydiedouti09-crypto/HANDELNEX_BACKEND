@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[Route('/api/actualites')]
 class ActualiteApiController extends AbstractController
@@ -87,6 +88,9 @@ class ActualiteApiController extends AbstractController
 
         $actualite = new Actualite();
         $this->hydrate($actualite, $data);
+        if (!$actualite->getSlug()) {
+            $actualite->setSlug($this->uniqueSlug($actualite->getTitre() ?? 'actualite'));
+        }
 
         $this->entityManager->persist($actualite);
         $this->entityManager->flush();
@@ -129,7 +133,18 @@ class ActualiteApiController extends AbstractController
         if (isset($data['titre'])) $actualite->setTitre($data['titre']);
         if (isset($data['slug'])) $actualite->setSlug($data['slug']);
         if (isset($data['contenu'])) $actualite->setContenu($data['contenu']);
+        if (isset($data['titreFr'])) $actualite->setTitreFr($data['titreFr']);
+        if (isset($data['titreEn'])) $actualite->setTitreEn($data['titreEn']);
+        if (isset($data['titreDe'])) $actualite->setTitreDe($data['titreDe']);
+        if (isset($data['contenuFr'])) $actualite->setContenuFr($data['contenuFr']);
+        if (isset($data['contenuEn'])) $actualite->setContenuEn($data['contenuEn']);
+        if (isset($data['contenuDe'])) $actualite->setContenuDe($data['contenuDe']);
+        if (!$actualite->getTitre() && $actualite->getTitreFr()) $actualite->setTitre($actualite->getTitreFr());
+        if (!$actualite->getContenu() && $actualite->getContenuFr()) $actualite->setContenu($actualite->getContenuFr());
         if (isset($data['image'])) $actualite->setImage($data['image']);
+        if (isset($data['imageFr'])) $actualite->setImageFr($data['imageFr']);
+        if (isset($data['imageEn'])) $actualite->setImageEn($data['imageEn']);
+        if (isset($data['imageDe'])) $actualite->setImageDe($data['imageDe']);
         if (isset($data['statut'])) $actualite->setStatut($data['statut']);
         if (isset($data['datePublication'])) {
             $actualite->setDatePublication(new \DateTimeImmutable($data['datePublication']));
@@ -142,7 +157,16 @@ class ActualiteApiController extends AbstractController
             'id' => $actualite->getId(),
             'titre' => $actualite->getTitre(),
             'slug' => $actualite->getSlug(),
+            'titreFr' => $actualite->getTitreFr(),
+            'titreEn' => $actualite->getTitreEn(),
+            'titreDe' => $actualite->getTitreDe(),
+            'contenuFr' => $actualite->getContenuFr(),
+            'contenuEn' => $actualite->getContenuEn(),
+            'contenuDe' => $actualite->getContenuDe(),
             'image' => $actualite->getImage(),
+            'imageFr' => $actualite->getImageFr(),
+            'imageEn' => $actualite->getImageEn(),
+            'imageDe' => $actualite->getImageDe(),
             'statut' => $actualite->getStatut(),
             'datePublication' => $actualite->getDatePublication()?->format('Y-m-d'),
         ];
@@ -152,5 +176,17 @@ class ActualiteApiController extends AbstractController
         }
 
         return $data;
+    }
+
+    private function uniqueSlug(string $value): string
+    {
+        $base = (new AsciiSlugger())->slug($value)->lower()->toString() ?: 'actualite';
+        $slug = $base;
+        $suffix = 2;
+        while ($this->actualiteRepository->findOneBy(['slug' => $slug])) {
+            $slug = $base . '-' . $suffix++;
+        }
+
+        return $slug;
     }
 }
