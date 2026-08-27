@@ -8,11 +8,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/contact')]
 class ContactApiController extends AbstractController
 {
+    // Ta clé SECRÈTE reCAPTCHA (différente de la clé publique utilisée dans React)
+    private const RECAPTCHA_SECRET_KEY = '6LfBVJstAAAAAOXmsrMrWLXaZeVwR8Xa_xf2eO48';
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ContactRepository $contactRepository,
@@ -28,6 +32,12 @@ class ContactApiController extends AbstractController
         $email = trim($data['email'] ?? '');
         $sujet = trim($data['sujet'] ?? '');
         $message = trim($data['message'] ?? '');
+        $captchaToken = $data['captchaToken'] ?? null;
+
+        // Vérification du CAPTCHA auprès de Google, avant toute autre validation
+        if (!$captchaToken || !$this->verifyCaptcha($captchaToken)) {
+            return $this->json(['errors' => ['captcha' => 'Vérification CAPTCHA échouée.']], 422);
+        }
 
         $errors = [];
         if ($nom === '') $errors['nom'] = 'Le nom est requis.';
@@ -49,6 +59,25 @@ class ContactApiController extends AbstractController
         $this->entityManager->flush();
 
         return $this->json(['success' => true, 'message' => 'Votre message a bien été envoyé.'], 201);
+    }
+
+    /**
+     * Interroge l'API Google pour vérifier que le token CAPTCHA envoyé par le visiteur est valide.
+     */
+    private function verifyCaptcha(string $token): bool
+    {
+        $client = HttpClient::create();
+
+        $response = $client->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
+            'body' => [
+                'secret' => self::RECAPTCHA_SECRET_KEY,
+                'response' => $token,
+            ],
+        ]);
+
+        $result = $response->toArray();
+
+        return $result['success'] ?? false;
     }
 
     // ---- Admin (protégé par JWT) ----
