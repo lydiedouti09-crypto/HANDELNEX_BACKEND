@@ -49,7 +49,6 @@ class SolutionApiController extends AbstractController
     #[Route('/admin/all', name: 'api_solutions_admin_list', methods: ['GET'])]
     public function adminList(): JsonResponse
     {
-        // Renvoie TOUTES les solutions (publiées ou non), pour le dashboard
         $solutions = $this->solutionRepository->findBy([], ['ordreAffichage' => 'ASC']);
 
         return $this->json(array_map(fn(Solution $s) => $this->toArray($s, true), $solutions));
@@ -143,6 +142,16 @@ class SolutionApiController extends AbstractController
         if (!$solution->getNom() && $solution->getNomFr()) $solution->setNom($solution->getNomFr());
         if (!$solution->getDescription() && $solution->getDescriptionFr()) $solution->setDescription($solution->getDescriptionFr());
         if (isset($data['descriptionComplete'])) $solution->setDescriptionComplete($data['descriptionComplete']);
+
+        // --- NOUVEAU : on récupère bien les 3 versions traduites envoyées par le formulaire admin ---
+        if (isset($data['descriptionCompleteFr'])) $solution->setDescriptionCompleteFr($data['descriptionCompleteFr']);
+        if (isset($data['descriptionCompleteEn'])) $solution->setDescriptionCompleteEn($data['descriptionCompleteEn']);
+        if (isset($data['descriptionCompleteDe'])) $solution->setDescriptionCompleteDe($data['descriptionCompleteDe']);
+        // Si aucune version "complète" générique n'est fournie, on utilise la version française comme repli
+        if (!$solution->getDescriptionComplete() && $solution->getDescriptionCompleteFr()) {
+            $solution->setDescriptionComplete($solution->getDescriptionCompleteFr());
+        }
+
         if (isset($data['image'])) $solution->setImage($data['image']);
         if (isset($data['imageFr'])) $solution->setImageFr($data['imageFr']);
         if (isset($data['imageEn'])) $solution->setImageEn($data['imageEn']);
@@ -180,6 +189,10 @@ class SolutionApiController extends AbstractController
 
         if ($detail) {
             $data['descriptionComplete'] = $solution->getDescriptionComplete();
+            // --- NOUVEAU : on renvoie bien les 3 versions traduites au frontend ---
+            $data['descriptionCompleteFr'] = $solution->getDescriptionCompleteFr();
+            $data['descriptionCompleteEn'] = $solution->getDescriptionCompleteEn();
+            $data['descriptionCompleteDe'] = $solution->getDescriptionCompleteDe();
         }
 
         return $data;

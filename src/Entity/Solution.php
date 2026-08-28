@@ -45,6 +45,16 @@ class Solution
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionComplete = null;
 
+    // --- NOUVEAU : versions traduites de la description complète ---
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionCompleteFr = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionCompleteEn = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionCompleteDe = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
@@ -141,6 +151,14 @@ class Solution
         $this->descriptionComplete = $descriptionComplete;
         return $this;
     }
+
+    // --- NOUVEAU : getters/setters des descriptions complètes traduites ---
+    public function getDescriptionCompleteFr(): ?string { return $this->descriptionCompleteFr; }
+    public function setDescriptionCompleteFr(?string $v): static { $this->descriptionCompleteFr = $v; return $this; }
+    public function getDescriptionCompleteEn(): ?string { return $this->descriptionCompleteEn; }
+    public function setDescriptionCompleteEn(?string $v): static { $this->descriptionCompleteEn = $v; return $this; }
+    public function getDescriptionCompleteDe(): ?string { return $this->descriptionCompleteDe; }
+    public function setDescriptionCompleteDe(?string $v): static { $this->descriptionCompleteDe = $v; return $this; }
 
     public function getImage(): ?string
     {
