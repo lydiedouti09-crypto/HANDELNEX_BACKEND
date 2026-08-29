@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ContactApiController extends AbstractController
 {
     // Ta clé SECRÈTE reCAPTCHA (différente de la clé publique utilisée dans React)
-    private const RECAPTCHA_SECRET_KEY = '6LfBVJstAAAAAOXmsrMrWLXaZeVwR8Xa_xf2eO48';
+    private const RECAPTCHA_SECRET_KEY = '6LdUKZ0tAAAAABWZog8nLnRtGSEqmAzIVKxo1wAN';
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
