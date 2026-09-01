@@ -24,6 +24,10 @@ class Solution
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
+    // =========================
+    // NOMS
+    // =========================
+
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $nomFr = null;
 
@@ -32,6 +36,13 @@ class Solution
 
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $nomDe = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $nomPtBr = null;
+
+    // =========================
+    // DESCRIPTIONS COURTES
+    // =========================
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $descriptionFr = null;
@@ -42,10 +53,16 @@ class Solution
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $descriptionDe = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $descriptionPtBr = null;
+
+    // =========================
+    // DESCRIPTIONS COMPLETES
+    // =========================
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionComplete = null;
 
-    // --- NOUVEAU : versions traduites de la description complète ---
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionCompleteFr = null;
 
@@ -54,6 +71,13 @@ class Solution
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descriptionCompleteDe = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descriptionCompletePtBr = null;
+
+    // =========================
+    // IMAGES
+    // =========================
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
@@ -67,6 +91,13 @@ class Solution
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageDe = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imagePtBr = null;
+
+    // =========================
+    // AUTRES
+    // =========================
+
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $icone = null;
 
@@ -74,10 +105,13 @@ class Solution
     private ?string $categorie = null;
 
     #[ORM\Column(length: 20)]
-    private ?string $statut = 'brouillon'; // brouillon | publie | archive
+    private ?string $statut = 'brouillon';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $lienGooglePlay = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $lienAppleStore = null;
 
     #[ORM\Column]
     private int $ordreAffichage = 0;
@@ -90,10 +124,18 @@ class Solution
         $this->createdAt = new \DateTimeImmutable();
     }
 
+    // =========================
+    // ID
+    // =========================
+
     public function getId(): ?int
     {
         return $this->id;
     }
+
+    // =========================
+    // NOM
+    // =========================
 
     public function getNom(): ?string
     {
@@ -117,6 +159,58 @@ class Solution
         return $this;
     }
 
+    // =========================
+    // NOMS TRADUITS
+    // =========================
+
+    public function getNomFr(): ?string
+    {
+        return $this->nomFr;
+    }
+
+    public function setNomFr(?string $nomFr): static
+    {
+        $this->nomFr = $nomFr;
+        return $this;
+    }
+
+    public function getNomEn(): ?string
+    {
+        return $this->nomEn;
+    }
+
+    public function setNomEn(?string $nomEn): static
+    {
+        $this->nomEn = $nomEn;
+        return $this;
+    }
+
+    public function getNomDe(): ?string
+    {
+        return $this->nomDe;
+    }
+
+    public function setNomDe(?string $nomDe): static
+    {
+        $this->nomDe = $nomDe;
+        return $this;
+    }
+
+    public function getNomPtBr(): ?string
+    {
+        return $this->nomPtBr;
+    }
+
+    public function setNomPtBr(?string $nomPtBr): static
+    {
+        $this->nomPtBr = $nomPtBr;
+        return $this;
+    }
+
+    // =========================
+    // DESCRIPTIONS
+    // =========================
+
     public function getDescription(): ?string
     {
         return $this->description;
@@ -128,37 +222,112 @@ class Solution
         return $this;
     }
 
-    public function getNomFr(): ?string { return $this->nomFr; }
-    public function setNomFr(?string $nomFr): static { $this->nomFr = $nomFr; return $this; }
-    public function getNomEn(): ?string { return $this->nomEn; }
-    public function setNomEn(?string $nomEn): static { $this->nomEn = $nomEn; return $this; }
-    public function getNomDe(): ?string { return $this->nomDe; }
-    public function setNomDe(?string $nomDe): static { $this->nomDe = $nomDe; return $this; }
-    public function getDescriptionFr(): ?string { return $this->descriptionFr; }
-    public function setDescriptionFr(?string $descriptionFr): static { $this->descriptionFr = $descriptionFr; return $this; }
-    public function getDescriptionEn(): ?string { return $this->descriptionEn; }
-    public function setDescriptionEn(?string $descriptionEn): static { $this->descriptionEn = $descriptionEn; return $this; }
-    public function getDescriptionDe(): ?string { return $this->descriptionDe; }
-    public function setDescriptionDe(?string $descriptionDe): static { $this->descriptionDe = $descriptionDe; return $this; }
+    public function getDescriptionFr(): ?string
+    {
+        return $this->descriptionFr;
+    }
+
+    public function setDescriptionFr(?string $value): static
+    {
+        $this->descriptionFr = $value;
+        return $this;
+    }
+
+    public function getDescriptionEn(): ?string
+    {
+        return $this->descriptionEn;
+    }
+
+    public function setDescriptionEn(?string $value): static
+    {
+        $this->descriptionEn = $value;
+        return $this;
+    }
+
+    public function getDescriptionDe(): ?string
+    {
+        return $this->descriptionDe;
+    }
+
+    public function setDescriptionDe(?string $value): static
+    {
+        $this->descriptionDe = $value;
+        return $this;
+    }
+
+    public function getDescriptionPtBr(): ?string
+    {
+        return $this->descriptionPtBr;
+    }
+
+    public function setDescriptionPtBr(?string $value): static
+    {
+        $this->descriptionPtBr = $value;
+        return $this;
+    }
+
+    // =========================
+    // DESCRIPTION COMPLETE
+    // =========================
 
     public function getDescriptionComplete(): ?string
     {
         return $this->descriptionComplete;
     }
 
-    public function setDescriptionComplete(?string $descriptionComplete): static
+    public function setDescriptionComplete(?string $value): static
     {
-        $this->descriptionComplete = $descriptionComplete;
+        $this->descriptionComplete = $value;
         return $this;
     }
 
-    // --- NOUVEAU : getters/setters des descriptions complètes traduites ---
-    public function getDescriptionCompleteFr(): ?string { return $this->descriptionCompleteFr; }
-    public function setDescriptionCompleteFr(?string $v): static { $this->descriptionCompleteFr = $v; return $this; }
-    public function getDescriptionCompleteEn(): ?string { return $this->descriptionCompleteEn; }
-    public function setDescriptionCompleteEn(?string $v): static { $this->descriptionCompleteEn = $v; return $this; }
-    public function getDescriptionCompleteDe(): ?string { return $this->descriptionCompleteDe; }
-    public function setDescriptionCompleteDe(?string $v): static { $this->descriptionCompleteDe = $v; return $this; }
+    public function getDescriptionCompleteFr(): ?string
+    {
+        return $this->descriptionCompleteFr;
+    }
+
+    public function setDescriptionCompleteFr(?string $value): static
+    {
+        $this->descriptionCompleteFr = $value;
+        return $this;
+    }
+
+    public function getDescriptionCompleteEn(): ?string
+    {
+        return $this->descriptionCompleteEn;
+    }
+
+    public function setDescriptionCompleteEn(?string $value): static
+    {
+        $this->descriptionCompleteEn = $value;
+        return $this;
+    }
+
+    public function getDescriptionCompleteDe(): ?string
+    {
+        return $this->descriptionCompleteDe;
+    }
+
+    public function setDescriptionCompleteDe(?string $value): static
+    {
+        $this->descriptionCompleteDe = $value;
+        return $this;
+    }
+
+    public function getDescriptionCompletePtBr(): ?string
+    {
+        return $this->descriptionCompletePtBr;
+    }
+
+    public function setDescriptionCompletePtBr(?string $value): static
+    {
+        $this->descriptionCompletePtBr = $value;
+        return $this;
+    }
+
+    // =========================
+    // IMAGES
+    // =========================
 
     public function getImage(): ?string
     {
@@ -204,6 +373,21 @@ class Solution
         return $this;
     }
 
+    public function getImagePtBr(): ?string
+    {
+        return $this->imagePtBr;
+    }
+
+    public function setImagePtBr(?string $imagePtBr): static
+    {
+        $this->imagePtBr = $imagePtBr;
+        return $this;
+    }
+
+    // =========================
+    // ICONE / CATEGORIE
+    // =========================
+
     public function getIcone(): ?string
     {
         return $this->icone;
@@ -226,6 +410,10 @@ class Solution
         return $this;
     }
 
+    // =========================
+    // STATUT
+    // =========================
+
     public function getStatut(): ?string
     {
         return $this->statut;
@@ -236,6 +424,10 @@ class Solution
         $this->statut = $statut;
         return $this;
     }
+
+    // =========================
+    // GOOGLE PLAY
+    // =========================
 
     public function getLienGooglePlay(): ?string
     {
@@ -248,6 +440,25 @@ class Solution
         return $this;
     }
 
+    // =========================
+    // APPLE STORE
+    // =========================
+
+    public function getLienAppleStore(): ?string
+    {
+        return $this->lienAppleStore;
+    }
+
+    public function setLienAppleStore(?string $lienAppleStore): static
+    {
+        $this->lienAppleStore = $lienAppleStore;
+        return $this;
+    }
+
+    // =========================
+    // ORDRE
+    // =========================
+
     public function getOrdreAffichage(): int
     {
         return $this->ordreAffichage;
@@ -259,6 +470,10 @@ class Solution
         return $this;
     }
 
+    // =========================
+    // DATE
+    // =========================
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -267,7 +482,6 @@ class Solution
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 }

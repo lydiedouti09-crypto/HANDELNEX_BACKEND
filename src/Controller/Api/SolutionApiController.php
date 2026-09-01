@@ -29,181 +29,486 @@ class SolutionApiController extends AbstractController
             ['ordreAffichage' => 'ASC']
         );
 
-        return $this->json(array_map($this->toArray(...), $solutions));
+        return $this->json(
+            array_map(fn(Solution $solution) => $this->toArray($solution), $solutions)
+        );
     }
 
     #[Route('/{slug}', name: 'api_solutions_show', methods: ['GET'])]
     public function show(string $slug): JsonResponse
     {
-        $solution = $this->solutionRepository->findOneBy(['slug' => $slug, 'statut' => 'publie']);
+        $solution = $this->solutionRepository->findOneBy([
+            'slug' => $slug,
+            'statut' => 'publie'
+        ]);
 
         if (!$solution) {
-            return $this->json(['error' => 'Solution introuvable'], 404);
+            return $this->json([
+                'error' => 'Solution introuvable'
+            ], 404);
         }
 
-        return $this->json($this->toArray($solution, true));
+        return $this->json(
+            $this->toArray($solution, true)
+        );
     }
 
-    // ---- Routes admin (protégées par JWT via security.yaml) ----
+    // ==========================================
+    // ADMIN
+    // ==========================================
 
     #[Route('/admin/all', name: 'api_solutions_admin_list', methods: ['GET'])]
     public function adminList(): JsonResponse
     {
-        $solutions = $this->solutionRepository->findBy([], ['ordreAffichage' => 'ASC']);
+        $solutions = $this->solutionRepository->findBy(
+            [],
+            ['ordreAffichage' => 'ASC']
+        );
 
-        return $this->json(array_map(fn(Solution $s) => $this->toArray($s, true), $solutions));
+        return $this->json(
+            array_map(
+                fn(Solution $solution) => $this->toArray($solution, true),
+                $solutions
+            )
+        );
     }
 
     #[Route('/admin/image-upload', name: 'api_solutions_image_upload', methods: ['POST'])]
     public function uploadImage(Request $request): JsonResponse
     {
         $image = $request->files->get('image');
+
         if (!$image instanceof UploadedFile || !$image->isValid()) {
-            return $this->json(['error' => 'Image invalide'], 400);
+            return $this->json([
+                'error' => 'Image invalide'
+            ], 400);
         }
 
-        if (!in_array($image->getMimeType(), ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true)) {
-            return $this->json(['error' => 'Format d\'image non autorisé'], 400);
+        if (!in_array(
+            $image->getMimeType(),
+            [
+                'image/jpeg',
+                'image/png',
+                'image/webp',
+                'image/gif'
+            ],
+            true
+        )) {
+            return $this->json([
+                'error' => 'Format d\'image non autorisé'
+            ], 400);
         }
 
         if ($image->getSize() > 10 * 1024 * 1024) {
-            return $this->json(['error' => 'L\'image ne doit pas dépasser 10 Mo'], 400);
+            return $this->json([
+                'error' => 'L\'image ne doit pas dépasser 10 Mo'
+            ], 400);
         }
 
-        $uploadDirectory = dirname(__DIR__, 3) . '/public/uploads/solutions';
+        $uploadDirectory = dirname(__DIR__, 3)
+            . '/public/uploads/solutions';
+
         if (!is_dir($uploadDirectory)) {
             mkdir($uploadDirectory, 0775, true);
         }
 
-        $filename = uniqid('solution_', true) . '.' . $image->guessExtension();
-        $image->move($uploadDirectory, $filename);
+        $filename =
+            uniqid('solution_', true)
+            . '.'
+            . $image->guessExtension();
 
-        return $this->json(['url' => '/uploads/solutions/' . $filename]);
+        $image->move(
+            $uploadDirectory,
+            $filename
+        );
+
+        return $this->json([
+            'url' => '/uploads/solutions/' . $filename
+        ]);
     }
+
+    // ==========================================
+    // CREATE
+    // ==========================================
 
     #[Route('/admin', name: 'api_solutions_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = json_decode(
+            $request->getContent(),
+            true
+        ) ?? [];
 
         $solution = new Solution();
-        $this->hydrate($solution, $data);
+
+        $this->hydrate(
+            $solution,
+            $data
+        );
+
         if (!$solution->getSlug()) {
-            $solution->setSlug($this->uniqueSlug($solution->getNom() ?? 'solution'));
+            $solution->setSlug(
+                $this->uniqueSlug(
+                    $solution->getNom() ?? 'solution'
+                )
+            );
         }
 
         $this->entityManager->persist($solution);
         $this->entityManager->flush();
 
-        return $this->json($this->toArray($solution, true), 201);
+        return $this->json(
+            $this->toArray($solution, true),
+            201
+        );
     }
 
+    // ==========================================
+    // UPDATE
+    // ==========================================
+
     #[Route('/admin/{id<\d+>}', name: 'api_solutions_update', methods: ['PUT'])]
-    public function update(int $id, Request $request): JsonResponse
-    {
+    public function update(
+        int $id,
+        Request $request
+    ): JsonResponse {
         $solution = $this->solutionRepository->find($id);
+
         if (!$solution) {
-            return $this->json(['error' => 'Solution introuvable'], 404);
+            return $this->json([
+                'error' => 'Solution introuvable'
+            ], 404);
         }
 
-        $data = json_decode($request->getContent(), true) ?? [];
-        $this->hydrate($solution, $data);
+        $data = json_decode(
+            $request->getContent(),
+            true
+        ) ?? [];
+
+        $this->hydrate(
+            $solution,
+            $data
+        );
 
         $this->entityManager->flush();
 
-        return $this->json($this->toArray($solution, true));
+        return $this->json(
+            $this->toArray($solution, true)
+        );
     }
+
+    // ==========================================
+    // DELETE
+    // ==========================================
 
     #[Route('/admin/{id<\d+>}', name: 'api_solutions_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         $solution = $this->solutionRepository->find($id);
+
         if (!$solution) {
-            return $this->json(['error' => 'Solution introuvable'], 404);
+            return $this->json([
+                'error' => 'Solution introuvable'
+            ], 404);
         }
 
         $this->entityManager->remove($solution);
         $this->entityManager->flush();
 
-        return $this->json(['success' => true]);
+        return $this->json([
+            'success' => true
+        ]);
     }
 
-    private function hydrate(Solution $solution, array $data): void
-    {
-        if (isset($data['nom'])) $solution->setNom($data['nom']);
-        if (isset($data['slug'])) $solution->setSlug($data['slug']);
-        if (isset($data['description'])) $solution->setDescription($data['description']);
-        if (isset($data['nomFr'])) $solution->setNomFr($data['nomFr']);
-        if (isset($data['nomEn'])) $solution->setNomEn($data['nomEn']);
-        if (isset($data['nomDe'])) $solution->setNomDe($data['nomDe']);
-        if (isset($data['descriptionFr'])) $solution->setDescriptionFr($data['descriptionFr']);
-        if (isset($data['descriptionEn'])) $solution->setDescriptionEn($data['descriptionEn']);
-        if (isset($data['descriptionDe'])) $solution->setDescriptionDe($data['descriptionDe']);
-        if (!$solution->getNom() && $solution->getNomFr()) $solution->setNom($solution->getNomFr());
-        if (!$solution->getDescription() && $solution->getDescriptionFr()) $solution->setDescription($solution->getDescriptionFr());
-        if (isset($data['descriptionComplete'])) $solution->setDescriptionComplete($data['descriptionComplete']);
+    // ==========================================
+    // HYDRATE
+    // ==========================================
 
-        // --- NOUVEAU : on récupère bien les 3 versions traduites envoyées par le formulaire admin ---
-        if (isset($data['descriptionCompleteFr'])) $solution->setDescriptionCompleteFr($data['descriptionCompleteFr']);
-        if (isset($data['descriptionCompleteEn'])) $solution->setDescriptionCompleteEn($data['descriptionCompleteEn']);
-        if (isset($data['descriptionCompleteDe'])) $solution->setDescriptionCompleteDe($data['descriptionCompleteDe']);
-        // Si aucune version "complète" générique n'est fournie, on utilise la version française comme repli
-        if (!$solution->getDescriptionComplete() && $solution->getDescriptionCompleteFr()) {
-            $solution->setDescriptionComplete($solution->getDescriptionCompleteFr());
+    private function hydrate(
+        Solution $solution,
+        array $data
+    ): void {
+
+        // --------------------------
+        // Général
+        // --------------------------
+
+        if (isset($data['nom'])) {
+            $solution->setNom($data['nom']);
         }
 
-        if (isset($data['image'])) $solution->setImage($data['image']);
-        if (isset($data['imageFr'])) $solution->setImageFr($data['imageFr']);
-        if (isset($data['imageEn'])) $solution->setImageEn($data['imageEn']);
-        if (isset($data['imageDe'])) $solution->setImageDe($data['imageDe']);
-        if (isset($data['icone'])) $solution->setIcone($data['icone']);
-        if (isset($data['categorie'])) $solution->setCategorie($data['categorie']);
-        if (isset($data['lienGooglePlay'])) $solution->setLienGooglePlay($data['lienGooglePlay']);
-        if (isset($data['statut'])) $solution->setStatut($data['statut']);
-        if (isset($data['ordreAffichage'])) $solution->setOrdreAffichage($data['ordreAffichage']);
+        if (isset($data['slug'])) {
+            $solution->setSlug($data['slug']);
+        }
+
+        if (isset($data['description'])) {
+            $solution->setDescription($data['description']);
+        }
+
+        // --------------------------
+        // Noms
+        // --------------------------
+
+        if (isset($data['nomFr'])) {
+            $solution->setNomFr($data['nomFr']);
+        }
+
+        if (isset($data['nomEn'])) {
+            $solution->setNomEn($data['nomEn']);
+        }
+
+        if (isset($data['nomDe'])) {
+            $solution->setNomDe($data['nomDe']);
+        }
+
+        if (isset($data['nomPtBr'])) {
+            $solution->setNomPtBr($data['nomPtBr']);
+        }
+
+        // --------------------------
+        // Descriptions
+        // --------------------------
+
+        if (isset($data['descriptionFr'])) {
+            $solution->setDescriptionFr($data['descriptionFr']);
+        }
+
+        if (isset($data['descriptionEn'])) {
+            $solution->setDescriptionEn($data['descriptionEn']);
+        }
+
+        if (isset($data['descriptionDe'])) {
+            $solution->setDescriptionDe($data['descriptionDe']);
+        }
+
+        if (isset($data['descriptionPtBr'])) {
+            $solution->setDescriptionPtBr($data['descriptionPtBr']);
+        }
+
+        // --------------------------
+        // Description complète
+        // --------------------------
+
+        if (isset($data['descriptionComplete'])) {
+            $solution->setDescriptionComplete(
+                $data['descriptionComplete']
+            );
+        }
+
+        if (isset($data['descriptionCompleteFr'])) {
+            $solution->setDescriptionCompleteFr(
+                $data['descriptionCompleteFr']
+            );
+        }
+
+        if (isset($data['descriptionCompleteEn'])) {
+            $solution->setDescriptionCompleteEn(
+                $data['descriptionCompleteEn']
+            );
+        }
+
+        if (isset($data['descriptionCompleteDe'])) {
+            $solution->setDescriptionCompleteDe(
+                $data['descriptionCompleteDe']
+            );
+        }
+
+        if (isset($data['descriptionCompletePtBr'])) {
+            $solution->setDescriptionCompletePtBr(
+                $data['descriptionCompletePtBr']
+            );
+        }
+
+        // --------------------------
+        // Images
+        // --------------------------
+
+        if (isset($data['image'])) {
+            $solution->setImage($data['image']);
+        }
+
+        if (isset($data['imageFr'])) {
+            $solution->setImageFr($data['imageFr']);
+        }
+
+        if (isset($data['imageEn'])) {
+            $solution->setImageEn($data['imageEn']);
+        }
+
+        if (isset($data['imageDe'])) {
+            $solution->setImageDe($data['imageDe']);
+        }
+
+        if (isset($data['imagePtBr'])) {
+            $solution->setImagePtBr($data['imagePtBr']);
+        }
+
+        // --------------------------
+        // Autres
+        // --------------------------
+
+        if (isset($data['icone'])) {
+            $solution->setIcone($data['icone']);
+        }
+
+        if (isset($data['categorie'])) {
+            $solution->setCategorie($data['categorie']);
+        }
+
+        // --------------------------
+        // Stores
+        // --------------------------
+
+        if (isset($data['lienGooglePlay'])) {
+            $solution->setLienGooglePlay(
+                $data['lienGooglePlay']
+            );
+        }
+
+        if (isset($data['lienAppleStore'])) {
+            $solution->setLienAppleStore(
+                $data['lienAppleStore']
+            );
+        }
+
+        // --------------------------
+        // Statut / ordre
+        // --------------------------
+
+        if (isset($data['statut'])) {
+            $solution->setStatut(
+                $data['statut']
+            );
+        }
+
+        if (isset($data['ordreAffichage'])) {
+            $solution->setOrdreAffichage(
+                (int) $data['ordreAffichage']
+            );
+        }
+
+        // --------------------------
+        // Fallback général
+        // --------------------------
+
+        if (
+            !$solution->getNom()
+            && $solution->getNomFr()
+        ) {
+            $solution->setNom(
+                $solution->getNomFr()
+            );
+        }
+
+        if (
+            !$solution->getDescription()
+            && $solution->getDescriptionFr()
+        ) {
+            $solution->setDescription(
+                $solution->getDescriptionFr()
+            );
+        }
+
+        if (
+            !$solution->getDescriptionComplete()
+            && $solution->getDescriptionCompleteFr()
+        ) {
+            $solution->setDescriptionComplete(
+                $solution->getDescriptionCompleteFr()
+            );
+        }
     }
 
-    private function toArray(Solution $solution, bool $detail = false): array
-    {
+    // ==========================================
+    // TO ARRAY
+    // ==========================================
+
+    private function toArray(
+        Solution $solution,
+        bool $detail = false
+    ): array {
+
         $data = [
+
             'id' => $solution->getId(),
+
             'nom' => $solution->getNom(),
             'slug' => $solution->getSlug(),
             'description' => $solution->getDescription(),
+
+            // Noms
             'nomFr' => $solution->getNomFr(),
             'nomEn' => $solution->getNomEn(),
             'nomDe' => $solution->getNomDe(),
+            'nomPtBr' => $solution->getNomPtBr(),
+
+            // Descriptions
             'descriptionFr' => $solution->getDescriptionFr(),
             'descriptionEn' => $solution->getDescriptionEn(),
             'descriptionDe' => $solution->getDescriptionDe(),
+            'descriptionPtBr' => $solution->getDescriptionPtBr(),
+
+            // Images
             'image' => $solution->getImage(),
             'imageFr' => $solution->getImageFr(),
             'imageEn' => $solution->getImageEn(),
             'imageDe' => $solution->getImageDe(),
+            'imagePtBr' => $solution->getImagePtBr(),
+
+            // Autres
             'icone' => $solution->getIcone(),
             'categorie' => $solution->getCategorie(),
+
+            // Stores
             'lienGooglePlay' => $solution->getLienGooglePlay(),
+            'lienAppleStore' => $solution->getLienAppleStore(),
+
             'statut' => $solution->getStatut(),
             'ordreAffichage' => $solution->getOrdreAffichage(),
         ];
 
         if ($detail) {
-            $data['descriptionComplete'] = $solution->getDescriptionComplete();
-            // --- NOUVEAU : on renvoie bien les 3 versions traduites au frontend ---
-            $data['descriptionCompleteFr'] = $solution->getDescriptionCompleteFr();
-            $data['descriptionCompleteEn'] = $solution->getDescriptionCompleteEn();
-            $data['descriptionCompleteDe'] = $solution->getDescriptionCompleteDe();
+
+            $data['descriptionComplete']
+                = $solution->getDescriptionComplete();
+
+            $data['descriptionCompleteFr']
+                = $solution->getDescriptionCompleteFr();
+
+            $data['descriptionCompleteEn']
+                = $solution->getDescriptionCompleteEn();
+
+            $data['descriptionCompleteDe']
+                = $solution->getDescriptionCompleteDe();
+
+            $data['descriptionCompletePtBr']
+                = $solution->getDescriptionCompletePtBr();
         }
 
         return $data;
     }
 
-    private function uniqueSlug(string $value): string
-    {
-        $base = (new AsciiSlugger())->slug($value)->lower()->toString() ?: 'solution';
+    // ==========================================
+    // SLUG
+    // ==========================================
+
+    private function uniqueSlug(
+        string $value
+    ): string {
+
+        $base = (new AsciiSlugger())
+            ->slug($value)
+            ->lower()
+            ->toString()
+            ?: 'solution';
+
         $slug = $base;
         $suffix = 2;
-        while ($this->solutionRepository->findOneBy(['slug' => $slug])) {
+
+        while (
+            $this->solutionRepository
+                ->findOneBy(['slug' => $slug])
+        ) {
             $slug = $base . '-' . $suffix++;
         }
 
